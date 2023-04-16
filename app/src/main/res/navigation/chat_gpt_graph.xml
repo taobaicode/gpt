@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chat_gpt_graph"
+    android:label="@string/menu_chat"
+    app:startDestination="@id/nav_chat">
+
+    <fragment
+        android:id="@+id/nav_chat"
+        android:name="com.aiafmaster.gpt.ui.chat.ChatFragment"
+        android:label="@string/menu_chat" />
+    <fragment
+        android:id="@+id/nav_image"
+        android:name="com.aiafmaster.gpt.ui.image.ImageFragment"
+        android:label="@string/menu_image"
+        tools:layout="@layout/image_fragment_main">
+        <action
+            android:id="@+id/action_imageFragment_to_imageVariationFragment"
+            app:destination="@id/imageVariationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/imageVariationFragment"
+        android:name="com.aiafmaster.gpt.ui.image.ImageVariationFragment"
+        android:label="fragment_image_variation"
+        tools:layout="@layout/fragment_image_variation" />
+    <dialog
+        android:id="@+id/nav_settings"
+        android:name="com.aiafmaster.gpt.ui.APISettingDialog"
+        android:label="@string/menu_settings" />
+</navigation>

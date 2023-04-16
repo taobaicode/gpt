@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_chat"
+            android:icon="@drawable/chat_question_icon"
+            android:title="@string/menu_chat" />
+        <item
+            android:id="@+id/nav_image"
+            android:icon="@drawable/image_variation"
+            android:title="@string/menu_image" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/settings_icon"
+            android:title="@string/menu_settings" />
+    </group>
+</menu>
