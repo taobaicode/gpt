@@ -8,5 +8,4 @@ data class ChatGPTResponse(
     @SerializedName("error") val gptError : GPTError,
     @SerializedName("usage") val gptUsage: ChatGPTUsage,
     @SerializedName("choices") val gptChoices : List<ChatGPTChoices>,
-    ){
-}
+    )

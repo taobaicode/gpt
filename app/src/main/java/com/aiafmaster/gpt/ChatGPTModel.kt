@@ -10,5 +10,4 @@ data class ChatGPTModel(
     @SerializedName("permission") var gptPermissions : List<GPTPermission>,
     @SerializedName("root") var gptRoot : String,
     @SerializedName("parent") var gptParent : String?
-    ) {
-}
+    )

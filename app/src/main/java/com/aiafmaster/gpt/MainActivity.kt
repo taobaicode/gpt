@@ -1,12 +1,17 @@
 package com.aiafmaster.gpt
 
 import android.content.Intent
+import android.graphics.Color
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import androidx.annotation.RequiresApi
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aiafmaster.gpt.databinding.ActivityMainBinding
@@ -17,8 +22,11 @@ import com.aiafmaster.gpt.ui.APISettingDialog
 class MainActivity: AppCompatActivity() {
     private lateinit var chatViewModel: ChatViewModel
     private lateinit var chatAdapter: ChatRecyclerViewAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val linearLayoutManager = LinearLayoutManager(this)
