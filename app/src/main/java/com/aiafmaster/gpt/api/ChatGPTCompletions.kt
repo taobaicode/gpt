@@ -1,5 +1,6 @@
-package com.aiafmaster.gpt
+package com.aiafmaster.gpt.api
 
+import com.aiafmaster.gpt.api.ChatGPTMessage
 import com.google.gson.annotations.SerializedName
 
 data class ChatGPTCompletions(

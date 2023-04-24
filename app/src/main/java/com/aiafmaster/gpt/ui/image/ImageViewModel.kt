@@ -7,9 +7,8 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import androidx.lifecycle.*
-import com.aiafmaster.gpt.ChatGPTManager
+import com.aiafmaster.gpt.api.ChatGPTManager
 import kotlinx.coroutines.*
-import okhttp3.internal.wait
 import java.io.BufferedOutputStream
 import java.io.FileOutputStream
 import java.io.OutputStream

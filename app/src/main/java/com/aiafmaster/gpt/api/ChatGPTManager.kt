@@ -1,5 +1,6 @@
-package com.aiafmaster.gpt
+package com.aiafmaster.gpt.api
 
+import com.aiafmaster.gpt.api.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.*
@@ -161,7 +162,7 @@ class ChatGPTManager(private val apiKey: String) {
             }
         })
         val resp = service.login().execute()
-        val response:ChatGPTResponse ? = resp.body()
+        val response: ChatGPTResponse? = resp.body()
         return true;
     }
 }

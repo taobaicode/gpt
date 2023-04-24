@@ -1,4 +1,4 @@
-package com.aiafmaster.gpt
+package com.aiafmaster.gpt.api
 
 import com.google.gson.annotations.SerializedName
 

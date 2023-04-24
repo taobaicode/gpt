@@ -55,8 +55,6 @@ class MainActivity: AppCompatActivity() {
         val editText = binding.chatEditText
         sendButton.setOnClickListener() {
             chatViewModel.onAsk(editText.text.toString())
-            // chatViewModel.transcript(this@MainActivity.getFileStreamPath("r8.m4a"), this@MainActivity.getFileStreamPath("request.log"))
-//            chatViewModel.transcript(this@MainActivity.getFileStreamPath("r8.m4a"))
             editText.text.clear()
         }
         val recordingButton = binding.recordingButton

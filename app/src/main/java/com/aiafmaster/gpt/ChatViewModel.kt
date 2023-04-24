@@ -1,6 +1,7 @@
 package com.aiafmaster.gpt
 
 import androidx.lifecycle.*
+import com.aiafmaster.gpt.api.ChatGPTManager
 import com.aiafmaster.gpt.db.Chat
 import com.aiafmaster.gpt.db.DBManager
 import com.aiafmaster.gpt.db.Settings
