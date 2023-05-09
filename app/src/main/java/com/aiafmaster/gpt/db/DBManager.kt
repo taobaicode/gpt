@@ -2,9 +2,17 @@ package com.aiafmaster.gpt.db
 
 import android.content.Context
 import androidx.room.Room
+import kotlinx.coroutines.flow.*
 
-class DBManager(private val appContext: Context) {
-
+interface DBManager {
+    val settings: List<Settings>
+    val chats: List<Chat>
+    fun updateSetting(setting : Settings) {}
+    fun insertSetting(setting: Settings) {}
+    fun insertChat(chat: Chat) {}
+    fun deleteChatHistory() {}
+}
+class DBManagerImpl(private val appContext: Context) : DBManager {
     private val db : ChatGPTDatabase by lazy {
         Room.databaseBuilder(
             appContext,
@@ -12,23 +20,23 @@ class DBManager(private val appContext: Context) {
         ).build()
     }
 
-    val settings : List<Settings> by lazy { db.settingsDao().getAll()}
+    override val settings : List<Settings> by lazy {db.settingsDao().getAll()}
 
-    fun updateSetting(setting : Settings) {
-        db.settingsDao().update(setting)
+    override fun updateSetting(setting : Settings) {
+        db.settingsDao().updateSettings(setting.key, setting.value)
     }
 
-    fun insertSetting(setting: Settings) {
+    override fun insertSetting(setting: Settings) {
         db.settingsDao().insertAll(setting)
     }
 
-    val chats: List<Chat> by lazy { db.chatDao().getAll() }
+    override val chats: List<Chat> by lazy { db.chatDao().getAll() }
 
-    fun insertChat(chat: Chat) {
+    override fun insertChat(chat: Chat) {
         db.chatDao().insert(chat)
     }
 
-    fun deleteChatHistory() {
+    override fun deleteChatHistory() {
         db.chatDao().deleteAllRows()
     }
 }

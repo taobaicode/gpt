@@ -5,18 +5,26 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aiafmaster.gpt.*
 import com.aiafmaster.gpt.databinding.ActivityMainBinding
 import com.aiafmaster.gpt.db.DBManager
+import com.aiafmaster.gpt.db.DBManagerImpl
 import com.aiafmaster.gpt.recording.Recording
+import com.aiafmaster.gpt.repository.SettingsRepository
+import kotlinx.coroutines.launch
 
 class ChatFragment: Fragment() {
     private val chatViewModel: ChatViewModel by lazy {
+        val dbManager= DBManagerImpl(requireContext().applicationContext);
         ViewModelProvider(requireActivity(),
-            ChatViewModel.Factory(DBManager(requireContext().applicationContext)))[ChatViewModel::class.java]
+            ChatViewModel.Factory(dbManager, SettingsRepository(dbManager)))[ChatViewModel::class.java]
     }
+
     private lateinit var chatAdapter: ChatRecyclerViewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,9 +62,17 @@ class ChatFragment: Fragment() {
             chatRecyclerViewAdapter.onChatListChange(it)
             recyclerView.scrollToPosition(chatRecyclerViewAdapter.itemCount-1)
         }
-        chatViewModel.apiKey.observe(viewLifecycleOwner) {
-            val app = requireActivity().applicationContext as ChatGPTApplication
-            app.apiKey = it.value
+//        chatViewModel.apiKey.observe(viewLifecycleOwner) {
+//            val app = requireActivity().applicationContext as ChatGPTApplication
+//            app.apiKey = it.value
+//        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                chatViewModel.apiKey.collect {
+                    val app = requireActivity().applicationContext as ChatGPTApplication
+                    app.apiKey = it
+                }
+            }
         }
         val sendButton = binding.chatSendButton
         val editText = binding.chatEditText

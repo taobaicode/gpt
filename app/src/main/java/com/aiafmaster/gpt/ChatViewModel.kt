@@ -5,13 +5,20 @@ import com.aiafmaster.gpt.api.ChatGPTManager
 import com.aiafmaster.gpt.db.Chat
 import com.aiafmaster.gpt.db.DBManager
 import com.aiafmaster.gpt.db.Settings
+import com.aiafmaster.gpt.repository.ChatGPTRepository
+import com.aiafmaster.gpt.repository.SettingsRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
-class ChatViewModel(private val dbManager: DBManager) : ViewModel() {
+class ChatViewModel(private val dbManager: DBManager,
+                    private val settingsRepository: SettingsRepository) : ViewModel() {
     private val conversationUi = MutableLiveData<ChatData>()
     fun getConversationUi() : LiveData<ChatData> {
         return conversationUi;
@@ -20,6 +27,7 @@ class ChatViewModel(private val dbManager: DBManager) : ViewModel() {
     private val _chatHistory = MutableLiveData<List<ChatData>>()
     val chatHistory: LiveData<List<ChatData>> = _chatHistory
     val chat = MediatorLiveData<List<ChatData>>()
+    val chatGPTRepository= ChatGPTRepository(viewModelScope)
 
     init {
         chat.addSource(_chatHistory) {
@@ -36,15 +44,17 @@ class ChatViewModel(private val dbManager: DBManager) : ViewModel() {
         }
         loadChatHistory()
         fetchAPIKey()
+
     }
 
     companion object {
         const val API_KEY = "api_key";
     }
 
-    class Factory(private val dbManager: DBManager): ViewModelProvider.Factory {
+    class Factory(private val dbManager: DBManager,
+                  private val settingsRepository:SettingsRepository): ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>) : T {
-            return ChatViewModel(dbManager) as T
+            return ChatViewModel(dbManager, settingsRepository) as T
         }
     }
 
@@ -58,12 +68,17 @@ class ChatViewModel(private val dbManager: DBManager) : ViewModel() {
     fun gptComplete(content: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val apiKey = getAPIKey()
-                if (apiKey != null) {
-                    val response = ChatGPTManager(apiKey).complete(content)
+                apiKey.collect {
+                    val response = ChatGPTManager(it).complete(content)
                     if (response != null) {
                         conversationUi.postValue(ChatData(response, true))
-                        dbManager.insertChat(Chat(message=response, who=true, time = Date().time))
+                        dbManager.insertChat(
+                            Chat(
+                                message = response,
+                                who = true,
+                                time = Date().time
+                            )
+                        )
                     }
                 }
             }
@@ -84,41 +99,25 @@ class ChatViewModel(private val dbManager: DBManager) : ViewModel() {
     fun transcript(file : File) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val apiKey = getAPIKey()
-                if (apiKey != null) {
-                    val question = ChatGPTManager(apiKey).transcript(file)
+                apiKey.collect {key->
+                    val question = ChatGPTManager(key).transcript(file)
                     question?.let { onAsk(it) }
                 }
             }
         }
     }
 
-    private val _apiKey = MutableLiveData<Settings>(Settings(-1, API_KEY, ""))
-    val apiKey: LiveData<Settings> = _apiKey
+    val apiKey: StateFlow<String> = settingsRepository.apiKey
 
     fun fetchAPIKey() {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                dbManager.settings.forEach() {
-                    if (it.key == API_KEY) {
-                        _apiKey.postValue(it)
-                    }
-                }
-            }
+            settingsRepository.fetchAPIKey()
         }
     }
 
     fun setAPIKey(key: String) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                _apiKey.value!!.value = key
-                if (_apiKey.value!!.id == -1) {
-                    apiKey.value!!.id = 0
-                    dbManager.insertSetting(_apiKey.value!!)
-                } else {
-                    dbManager.updateSetting(_apiKey.value!!)
-                }
-            }
+            settingsRepository.updateApiKey(key)
         }
     }
 
@@ -128,9 +127,6 @@ class ChatViewModel(private val dbManager: DBManager) : ViewModel() {
                 dbManager.deleteChatHistory()
             }
         }
-    }
-    private suspend fun getAPIKey() : String? {
-        return _apiKey.value?.value
     }
 
     private fun loadChatHistory() {
