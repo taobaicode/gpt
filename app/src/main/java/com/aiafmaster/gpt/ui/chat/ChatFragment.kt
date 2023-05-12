@@ -22,7 +22,7 @@ class ChatFragment: Fragment() {
     private val chatViewModel: ChatViewModel by lazy {
         val dbManager= DBManagerImpl(requireContext().applicationContext);
         ViewModelProvider(requireActivity(),
-            ChatViewModel.Factory(dbManager, SettingsRepository(dbManager)))[ChatViewModel::class.java]
+            ChatViewModel.Factory(dbManager))[ChatViewModel::class.java]
     }
 
     private lateinit var chatAdapter: ChatRecyclerViewAdapter

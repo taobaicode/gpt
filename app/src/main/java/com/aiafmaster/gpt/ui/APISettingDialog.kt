@@ -21,12 +21,11 @@ class APISettingDialog: DialogFragment() {
     ): View? {
         val chatViewModel = ViewModelProvider(requireActivity())[ChatViewModel::class.java]
         val bind = ApiSettingFragmentBinding.inflate(inflater, container, false)
-        chatViewModel.fetchAPIKey()
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 chatViewModel.apiKey.collect {
                     bind.editTextAPIKey.setText(it)
-                    println("Collect API Key")
+                    println("Collect API Key $it")
                 }
             }
         }

@@ -21,9 +21,8 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
-class ChatViewModel(private val dbManager: DBManager,
-                    private val settingsRepository: SettingsRepository) : ViewModel() {
-
+class ChatViewModel(private val dbManager: DBManager) : ViewModel() {
+    private val settingsRepository = SettingsRepository(dbManager, viewModelScope)
     private val chatGPTRepository = ChatGPTRepository(settingsRepository, dbManager, viewModelScope)
     private val conversationUi = chatGPTRepository.conversationUi
     private val _chatHistory = MutableLiveData<List<ChatData>>()
@@ -43,7 +42,6 @@ class ChatViewModel(private val dbManager: DBManager,
             }
         }
         loadChatHistory()
-        fetchAPIKey()
     }
 
     companion object {
@@ -51,10 +49,9 @@ class ChatViewModel(private val dbManager: DBManager,
     }
 
     class Factory(
-            private val dbManager: DBManager,
-            private val settingsRepository:SettingsRepository): ViewModelProvider.Factory {
+            private val dbManager: DBManager): ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>) : T {
-            return ChatViewModel(dbManager, settingsRepository) as T
+            return ChatViewModel(dbManager) as T
         }
     }
 
@@ -78,12 +75,6 @@ class ChatViewModel(private val dbManager: DBManager,
     }
 
     val apiKey: StateFlow<String> = settingsRepository.apiKey
-
-    fun fetchAPIKey() {
-        viewModelScope.launch {
-            settingsRepository.fetchAPIKey()
-        }
-    }
 
     fun setAPIKey(key: String) {
         viewModelScope.launch {

@@ -8,6 +8,6 @@ import androidx.room.PrimaryKey
 class Settings(
     @PrimaryKey var id: Int,
     @ColumnInfo(name="key") val key: String,
-    @ColumnInfo(name="vale") var value:String,
+    @ColumnInfo(name="vale") var value: String,
 ){}
 

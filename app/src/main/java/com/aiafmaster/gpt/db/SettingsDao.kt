@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SettingsDao {
     @Query("SELECT * FROM settings")
-    fun getAll() : List<Settings>
+    fun getAll() : Flow<List<Settings>>
+
+    @Query("SELECT * FROM settings WHERE key=:key")
+    fun getSetting(key: String): List<Settings>
 
     @Insert
     fun insertAll(vararg settings: Settings)

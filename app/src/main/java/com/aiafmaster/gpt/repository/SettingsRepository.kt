@@ -1,19 +1,34 @@
 package com.aiafmaster.gpt.repository
 
 import com.aiafmaster.gpt.db.DBManager
-import com.aiafmaster.gpt.db.Settings
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
-class SettingsRepository(private val dbManager: DBManager,
-                        private val dispatcher: CoroutineDispatcher=Dispatchers.IO) {
-    private val _apiKey = MutableStateFlow<String>("");
-    val apiKey: StateFlow<String> = _apiKey
+class SettingsRepository(
+    private val dbManager: DBManager,
+    coroutineScope: CoroutineScope,
+    private val dispatcher: CoroutineDispatcher=Dispatchers.IO) {
 
-    private var settings: Settings? = null
+    val apiKey: StateFlow<String> = dbManager.settings.map {
+        val k = it.filter { settings ->
+            println("VC got ${settings.key} : ${settings.value}")
+            settings.key == API_KEY && settings.value.isNotEmpty()
+        }.map { settings ->
+            settings.value
+        }
+        println("VC k size ${k.size}, ${k.first()}")
+        if (k.isEmpty()) "" else k.first()
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = ""
+    )
 
     companion object {
         const val API_KEY = "api_key";
@@ -21,25 +36,7 @@ class SettingsRepository(private val dbManager: DBManager,
 
     suspend fun updateApiKey(apiKey: String) {
         withContext(dispatcher) {
-            if (settings == null) {
-                dbManager.insertSetting(Settings(-1, API_KEY, apiKey))
-            } else {
-                settings!!.value = apiKey
-                dbManager.updateSetting(settings!!)
-            }
-            fetchAPIKey()
-        }
-    }
-
-    suspend fun fetchAPIKey() {
-        withContext(dispatcher) {
-            val key = dbManager.settings.filter {
-                it.key == API_KEY
-            }.map { settings= it
-                    it.value }
-            if (key.isNotEmpty()) {
-                _apiKey.emit(key.first())
-            }
+            dbManager.insertOrUpdateSetting(API_KEY, apiKey)
         }
     }
 }

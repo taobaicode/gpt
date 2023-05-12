@@ -26,7 +26,10 @@ class ChatGPTRepository(
     init {
         coroutineScope.launch {
             println("start collect")
-            settingsRepository.apiKey.collect {apiKey=it}
+            settingsRepository.apiKey.collect {
+                apiKey=it
+                println("APK init $it")
+            }
             println("end collect")
         }
     }
