@@ -1,51 +1,63 @@
 package com.aiafmaster.gpt.repository
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import com.aiafmaster.gpt.ChatData
+import com.aiafmaster.gpt.api.ChatGPTManager
+import com.aiafmaster.gpt.db.Chat
+import com.aiafmaster.gpt.db.DBManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.io.File
+import java.util.Date
 
-class ChatGPTRepository(private val coroutineScope: CoroutineScope) {
-    private val _stateFlow = MutableStateFlow<Int>(0)
-    private val stateFlow: StateFlow<Int> = _stateFlow
+class ChatGPTRepository(
+        private val settingsRepository: SettingsRepository,
+        private val dbManager: DBManager,
+        coroutineScope: CoroutineScope,
+        private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+        ) {
+    private var apiKey:String = ""
 
+    private val _conversationUi = MutableLiveData<ChatData>()
+    val conversationUi:LiveData<ChatData> = _conversationUi
     init {
         coroutineScope.launch {
-            var job: Job?=null
-            var job2: Job? = null
-            val scope = CoroutineScope(Dispatchers.Default + CoroutineName("Test")).launch {
-                job = launch {
-                    _stateFlow.emit(1)
-                    delay(1000)
-                    _stateFlow.emit(2)
-                    delay(1000)
-                    _stateFlow.emit(3)
-                    delay(1000)
-                    _stateFlow.emit(4)
-                }
-                job2 = launch {
-                    collectFlow()
-                }
-            }
-            while(stateFlow.value != 4) {
-                println("StateFlow value ${stateFlow.value}")
-                delay(500)
-            }
-            delay(5000)
-            println("Job1 complete ${job!!.isCompleted}")
-            println("Job2 complete ${job2!!.isCompleted}")
-            _stateFlow.emit(5)
-            println("Scope complete? ${scope.isCompleted}")
-            scope.cancelAndJoin()
-            println("Job2 complete ${job2!!.isCompleted}")
-            println("Scope complete? ${scope.isCompleted}")
+            println("start collect")
+            settingsRepository.apiKey.collect {apiKey=it}
+            println("end collect")
         }
     }
 
-    private suspend fun collectFlow(): Unit {
-        var scope = coroutineScope {
-            stateFlow.collect {
-                println(it)
-            }
+    suspend fun onAsk(question : String ) : Unit {
+        withContext(dispatcher) {
+            val chatData = ChatData(question, false, Date())
+            _conversationUi.postValue(chatData)
+            dbManager.insertChat(Chat(message=chatData.content, who=chatData.bot, time = Date().time))
+            gptComplete(question)
+            println("onAsk done")
+        }
+    }
+    private fun gptComplete(content: String) {
+        val response = ChatGPTManager(apiKey).complete(content)
+        if (response != null) {
+            _conversationUi.postValue(ChatData(response, true, Date()))
+            dbManager.insertChat(
+                Chat(
+                    message = response,
+                    who = true,
+                    time = Date().time
+                )
+            )
+        }
+    }
+
+    suspend fun transcript(file : File) {
+        withContext(dispatcher) {
+            val question = ChatGPTManager(apiKey).transcript(file)
+            question?.let { onAsk(it) }
         }
     }
 }

@@ -38,9 +38,7 @@ class SettingsRepository(private val dbManager: DBManager,
             }.map { settings= it
                     it.value }
             if (key.isNotEmpty()) {
-                _apiKey.emit(key[0])
-            } else {
-                _apiKey.emit("")
+                _apiKey.emit(key.first())
             }
         }
     }

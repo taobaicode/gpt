@@ -11,11 +11,14 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.widget.ConstraintSet.Constraint
@@ -26,7 +29,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun chatCompose(chatViewModel: ChatViewModel) {
-    val messageHistory by chatViewModel.chatHistory.observeAsState()
     val messages by chatViewModel.chat.observeAsState()
     MaterialTheme {
         chatMain(messages = messages) {message-> chatViewModel.onAsk(message)}
@@ -99,6 +101,7 @@ fun messageCard(message: ChatData) {
         modifier= Modifier
             .fillMaxWidth()
             .padding(8.dp),
+
         backgroundColor = MaterialTheme.colors.background,
         elevation= 4.dp
             ) {
@@ -110,10 +113,20 @@ fun messageCard(message: ChatData) {
                     painter = painterResource(res),
                     "Question",
                 modifier = Modifier.padding(6.dp).width(40.dp).height(40.dp))
+                Text(
+                    message.timeStamp.toString(),
+                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                        .wrapContentWidth(Alignment.End),
+                    style = MaterialTheme.typography.overline
+                )
             }
-            Text(message.content, modifier=Modifier.padding(6.dp))
+            Text(
+                message.content,
+                modifier=Modifier.padding(6.dp),
+                color = MaterialTheme.colors.onBackground,
+                style = MaterialTheme.typography.body2
+            )
         }
-
     }
 }
 

@@ -1,4 +1,9 @@
 package com.aiafmaster.gpt
 
-data class ChatData (var content : String,
-                     var bot : Boolean )
+import java.util.Date
+
+data class ChatData (
+    var content : String,
+    var bot : Boolean,
+    var timeStamp: Date
+)

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.aiafmaster.gpt.ChatViewModel
 import com.aiafmaster.gpt.databinding.FragmentChatComposeBinding
 import com.aiafmaster.gpt.db.DBManagerImpl
+import com.aiafmaster.gpt.repository.ChatGPTRepository
 import com.aiafmaster.gpt.repository.SettingsRepository
 import com.google.accompanist.themeadapter.material.MdcTheme
 
@@ -17,7 +18,10 @@ class ChatComposeFragment: Fragment() {
     private val chatViewModel: ChatViewModel by lazy {
         val dbManager= DBManagerImpl(requireContext().applicationContext);
         ViewModelProvider(requireActivity(),
-            ChatViewModel.Factory(dbManager, SettingsRepository(dbManager)))[ChatViewModel::class.java]
+            ChatViewModel.Factory(
+                dbManager,
+                SettingsRepository(dbManager)
+            ))[ChatViewModel::class.java]
     }
 
     override fun onCreateView(
